@@ -1,0 +1,96 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum SatuanJumlah {
+  buah
+  lusin
+  dus
+  rim
+  gross
+}
+
+model BarangKeluar {
+  barangkeluarId     Int     @id @default(autoincrement())
+  jumlahBarangKeluar BigInt
+  barang             Barang? @relation(fields: [barangId], references: [barangId])
+  barangId           BigInt?
+}
+
+model BarangMasuk {
+  barangmasukId     Int     @id @default(autoincrement())
+  jumlahBarangMasuk BigInt
+  barang            Barang? @relation(fields: [barangId], references: [barangId])
+  barangId          BigInt?
+}
+
+model StokBarang {
+  stokId     Int     @id @default(autoincrement())
+  stokBarang BigInt?
+  barang     Barang? @relation(fields: [barangId], references: [barangId])
+  barangId   BigInt?
+}
+
+model Barang {
+  barangId     BigInt        @id @default(autoincrement())
+  kodeBarang   String        @unique @db.VarChar(20)
+  namaBarang   String        @db.VarChar(100)
+  satuanBarang SatuanJumlah
+  hargaBarang  BigInt?
+  stokbarang   StokBarang?
+  barangmasuk  BarangMasuk?
+  barangkeluar BarangKeluar?
+  createdAt    DateTime?     @default(now())
+  updatedAt    DateTime?     @updatedAt
+  deletedAt    DateTime?
+}
+
+model UserHasRole {
+  userhasroleId BigInt  @id @default(autoincrement())
+  role          Role?   @relation(fields: [roleId], references: [roleId])
+  roleId        Int?
+  user          User?   @relation(fields: [userId], references: [userId])
+  userId        BigInt?
+}
+
+model RoleHasPermission {
+  rolehaspermissionId Int         @id @default(autoincrement())  
+  permission          Permission? @relation(fields: [permissionId], references: [permissionId])
+  permissionId        Int?
+  role                Role?       @relation(fields: [roleId], references: [roleId])
+  roleId              Int?
+}
+
+model Role {
+  roleId            Int                 @id @default(autoincrement())
+  rolesName         String              @db.VarChar(50)
+  rolehaspermission RoleHasPermission[]
+  userhasrole       UserHasRole?
+}
+
+model Permission {
+  permissionId      Int                 @id @default(autoincrement())
+  permissionName    String              @db.VarChar(50)
+  rolehaspermission RoleHasPermission[]
+}
+
+model User {
+  userId      BigInt       @id @default(autoincrement())
+  firstName   String       @db.VarChar(120)
+  lastName    String       @db.VarChar(120)
+  address     String       @db.VarChar(255)
+  email       String       @unique @db.VarChar(50)
+  password    String
+  createdAt   DateTime?    @default(now())
+  updatedAt   DateTime?    @updatedAt
+  deletedAt   DateTime?
+  userhasrole UserHasRole?
+}
